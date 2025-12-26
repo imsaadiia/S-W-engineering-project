@@ -261,21 +261,28 @@
                         id="patient-district" placeholder="জেলা টাইপ বা নির্বাচন করুন" required
                         class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"><datalist
                         id="districts-list"></datalist></div>
-                <div><label for="patient-upazila"
+                <div><label for="patient-sub-district"
                         class="block text-sm font-medium text-gray-700 mb-1">উপজেলা</label><input list="upazilas-list"
-                        id="patient-upazila" placeholder="উপজেলা টাইপ বা নির্বাচন করুন" required
+                        id="patient-sub-district" placeholder="উপজেলা টাইপ বা নির্বাচন করুন" required
                         class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"><datalist
                         id="upazilas-list"></datalist></div>
                 <div><label for="patient-hospital-name" class="block text-sm font-medium text-gray-700 mb-1">হাসপাতালের
-                        নাম</label><input list="hospitals-list" id="patient-hospital-name"
-                        placeholder="হাসপাতাল টাইপ বা নির্বাচন করুন" required
+                        নাম (ঐচ্ছিক)</label><input list="hospitals-list" id="patient-hospital-name"
+                        placeholder="হাসপাতাল টাইপ বা নির্বাচন করুন"
                         class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"><datalist
                         id="hospitals-list"></datalist></div>
-                <div class="space-y-2"><label for="patient-location"
+
+                <div class="space-y-2"><label for="patient-address"
                         class="block text-sm font-medium text-gray-700 mb-1">ঠিকানা / এলাকা (Address/Area)</label><input
-                        type="text" id="patient-location" required
+                        type="text" id="patient-address" required
                         class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"
                         placeholder="যেমন: বাসা ১২, সড়ক ৫, মিরপুর, ঢাকা"></div>
+
+                <div class="space-y-2"><label for="patient-available-time"
+                        class="block text-sm font-medium text-gray-700 mb-1">প্রাপ্য সময় (Available Time)</label><input
+                        type="text" id="patient-available-time" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"
+                        placeholder="যেমন: সকাল ১০টা - বিকেল ৫টা"></div>
 
                 <div class="space-y-2">
                     <p class="block text-sm font-medium text-gray-700">ডোনেশনের ধরণ (Donation Type)</p>
@@ -342,16 +349,20 @@
                         <option value="O-">O-</option>
                     </select>
                 </div>
-                <div class="space-y-2"><label for="donor-location"
-                        class="block text-sm font-medium text-gray-700 mb-1">জেলা / শহর</label><input type="text"
-                        id="donor-location" required
-                        class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200"
-                        placeholder="যেমন: ঢাকা"></div>
-                <div><label for="donor-availability" class="block text-sm font-medium text-gray-700 mb-1">ফাঁকা সময় /
-                        প্রাপ্যতা</label><input type="text" id="donor-availability"
-                        placeholder="যেমন: সপ্তাহান্তে, সন্ধ্যা ৫ টার পর"
+                <div><label for="donor-district" class="block text-sm font-medium text-gray-700 mb-1">জেলা</label><input
+                        list="districts-list" id="donor-district" placeholder="জেলা টাইপ বা নির্বাচন করুন" required
                         class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200">
                 </div>
+                <div><label for="donor-sub-district"
+                        class="block text-sm font-medium text-gray-700 mb-1">উপজেলা</label><input list="upazilas-list"
+                        id="donor-sub-district" placeholder="উপজেলা টাইপ বা নির্বাচন করুন" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200">
+                </div>
+                <div class="space-y-2"><label for="donor-address"
+                        class="block text-sm font-medium text-gray-700 mb-1">ঠিকানা / এলাকা (Address/Area)</label><input
+                        type="text" id="donor-address" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200"
+                        placeholder="যেমন: বাসা ১২, সড়ক ৫, মিরপুর, ঢাকা"></div>
 
                 <div class="space-y-2">
                     <p class="block text-sm font-medium text-gray-700">ডোনেশনের অগ্রাধিকার</p>
@@ -508,106 +519,41 @@
 
     <!-- JavaScript Code (Handles all logic and simulation) -->
     <script type="module">
-        // --- SECTION 1: FIREBASE INITIALIZATION AND AUTHENTICATION ---
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, addDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        // --- SUPABASE INITIALIZATION ---
 
-        // GLOBAL CANVAS VARIABLES (Mandatory to use)
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        // GLOBAL VARIABLES
+        const YOUR_SUPABASE_URL = "https://xmnlkfcazmjommwvbptq.supabase.co";
+        const YOUR_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhtbmxrZmNhem1qb21td3ZicHRxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQxNzEwNzksImV4cCI6MjA3OTc0NzA3OX0.S_7HkXahzs3hqDno-XOs2pkpHxcxAwMnhD4Gv8laS0Y";
 
-        let app, db, auth;
-        let userId = null;
-        let currentUserRole = null; // Stores 'patient', 'donor', or 'hospital'
+        let supabase;
+        let currentUser = null;
+        let currentUserRole = null;
 
-        // Firestore Paths (using public collection for shared login data)
-        const REGISTERED_USERS_COLLECTION = `artifacts/${appId}/public/data/registered_users`;
-
-        /** Initializes Firebase and sets up authentication. */
-        async function setupAuthentication() {
+        function initSupabase() {
             try {
-                if (Object.keys(firebaseConfig).length === 0) {
-                    console.error("Firebase config is missing.");
-                    showMessage("Firebase কনফিগারেশন পাওয়া যায়নি। ডেটা সংরক্ষণ হবে না।", 'error');
-                    return;
-                }
-
-                app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-
-                // Sign in using custom token or anonymously
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    await signInAnonymously(auth);
-                }
-
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        userId = user.uid;
-                        document.getElementById('userIdDisplay').innerHTML = `**User ID:** ${userId}`;
-                        console.log("Firebase Auth Ready. UID:", userId);
-                    } else {
-                        userId = null;
-                        document.getElementById('userIdDisplay').innerHTML = `**User ID:** Anonymous`;
-                        console.log("User logged out or anonymous.");
-                    }
-                });
-
-            } catch (error) {
-                console.error("Error setting up Firebase:", error);
-                showMessage("Firebase সংযোগ ব্যর্থ: " + error.message, 'error');
+                supabase = window.supabase.createClient(YOUR_SUPABASE_URL, YOUR_SUPABASE_ANON_KEY);
+                console.log("Supabase initialized");
+            } catch (err) {
+                console.error("Supabase init error:", err);
+                showMessage("ডাটাবেস সংযোগে সমস্যা হয়েছে।", 'error');
             }
         }
 
-        /** General data validation (simple check for phone/pin/text format) */
-        function validateInput(value, type) {
-            if (!value) return false;
-            switch (type) {
-                case 'phone':
-                    // Basic check for Bangladesh phone number format (starting with 01 and 11 digits)
-                    return /^01\d{9}$/.test(value);
-                case 'pin':
-                    // Exactly 4 digits
-                    return /^\d{4}$/.test(value);
-                case 'text':
-                    // Not empty and not just spaces
-                    return value.trim().length > 0;
-                default:
-                    return true;
-            }
-        }
-
-        // --- SECTION 2: UI UTILITIES AND NAVIGATION ---
-
-        /** Shows a temporary message box on the screen. */
+        // --- UTILS ---
         function showMessage(text, type = 'success') {
             const msgBox = document.getElementById('message-box');
             const msgText = document.getElementById('message-text');
-
             msgText.textContent = text;
-            // Reset classes
             msgBox.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-50 p-3 rounded-lg shadow-xl transition-all duration-300 transform min-w-[300px] text-center';
 
-            if (type === 'error') {
-                msgBox.classList.add('bg-red-100', 'text-red-700');
-            } else if (type === 'success') {
-                msgBox.classList.add('bg-green-100', 'text-green-700');
-            } else {
-                msgBox.classList.add('bg-yellow-100', 'text-yellow-700');
-            }
+            if (type === 'error') msgBox.classList.add('bg-red-100', 'text-red-700');
+            else if (type === 'success') msgBox.classList.add('bg-green-100', 'text-green-700');
+            else msgBox.classList.add('bg-yellow-100', 'text-yellow-700');
 
             msgBox.classList.remove('hidden');
-
-            setTimeout(() => {
-                msgBox.classList.add('hidden');
-            }, 5000);
+            setTimeout(() => msgBox.classList.add('hidden'), 5000);
         }
 
-        /** Controls the visibility of the main UI sections. */
         function showScreen(screenId) {
             const screens = [
                 'main-selection', 'patient-auth-selection', 'donor-auth-selection', 'hospital-auth-selection',
@@ -616,301 +562,232 @@
                 'patient-dashboard', 'donor-dashboard', 'hospital-dashboard'
             ];
             screens.forEach(id => {
-                const element = document.getElementById(id);
-                if (element) {
-                    element.classList.toggle('hidden', id !== screenId);
-                }
+                const el = document.getElementById(id);
+                if (el) el.classList.toggle('hidden', id !== screenId);
             });
             document.getElementById('receipt-message')?.classList.add('hidden');
         }
 
-        /** Simulates location data for datalists. */
-        function populateDatalists() {
-            const districts = ["ঢাকা", "চট্টগ্রাম", "খুলনা", "সিলেট", "রাজশাহী", "বরিশাল", "রংপুর"];
-            const hospitals = ["ঢাকা মেডিকেল কলেজ হাসপাতাল", "বঙ্গবন্ধু শেখ মুজিব মেডিকেল বিশ্ববিদ্যালয়", "জাতীয় হৃদরোগ ইনস্টিটিউট", "সিলেট এমএজি ওসমানী মেডিকেল কলেজ", "খুলনা সিটি হাসপাতাল", "রাজশাহী মেডিকেল কলেজ হাসপাতাল"];
-            const upazilas = ["মিরপুর", "গুলশান", "ধানমন্ডি", "বাড্ডা", "সাভার", "পাহাড়তলী", "জালালাবাদ"];
-
-            // Helper function to apply data
-            const applyData = (id, data) => {
-                const datalist = document.getElementById(id);
-                if (datalist) datalist.innerHTML = data.map(item => `<option value="${item}">`).join('');
-            };
-
-            applyData('districts-list', districts);
-            applyData('hospitals-list', hospitals);
-            applyData('upazilas-list', upazilas);
+        function validateInput(value, type) {
+            if (!value) return false;
+            // Simplified validation as per request "login credentials will be phone number and 4 digit pin"
+            if (type === 'phone') return /^01\d{9}$/.test(value);
+            if (type === 'pin') return /^\d{4}$/.test(value);
+            return value.trim().length > 0;
         }
 
-        // --- SECTION 3: LOGIN HANDLERS (Firestore Operations) ---
+        // --- AUTH LOGIC (CUSTOM TABLE AUTH) ---
 
-        /** Generic function to handle user login for Patient and Donor (uses phone/pin) */
-        async function handlePhoneLogin(event, role) {
+        async function handleLogin(event, role) {
             event.preventDefault();
-            const identifier = document.getElementById(`${role}-login-phone`).value.trim();
-            const pin = document.getElementById(`${role}-login-pin`).value.trim();
 
-            if (!validateInput(identifier, 'phone')) {
-                showMessage("সঠিক ১১-সংখ্যার ফোন নম্বর লিখুন।", 'error');
-                return;
+            let identifier, pin, table;
+
+            if (role === 'patient') {
+                identifier = document.getElementById('patient-login-phone').value.trim();
+                pin = document.getElementById('patient-login-pin').value.trim();
+                table = 'patients';
+            } else if (role === 'donor') {
+                identifier = document.getElementById('donor-login-phone').value.trim();
+                pin = document.getElementById('donor-login-pin').value.trim();
+                table = 'donors';
+            } else { // hospital
+                identifier = document.getElementById('hospital-login-license').value.trim();
+                pin = document.getElementById('hospital-login-pin').value.trim();
+                table = 'hospitals';
             }
-            if (!validateInput(pin, 'pin')) {
-                showMessage("সঠিক ৪-সংখ্যার পিন লিখুন।", 'error');
+
+            if (!identifier || !pin) {
+                showMessage("সব তথ্য পূরণ করুন", 'error');
                 return;
             }
 
             try {
-                const q = query(collection(db, REGISTERED_USERS_COLLECTION),
-                    where("identifier", "==", identifier),
-                    where("role", "==", role));
-                const querySnapshot = await getDocs(q);
+                // Query the specific table for the user
+                const { data, error } = await supabase
+                    .from(table)
+                    .select('*')
+                    .eq('identifier', identifier)
+                    .single();
 
-                if (querySnapshot.empty) {
-                    showMessage("এই ফোন নম্বরটি নিবন্ধিত নয়, অথবা ভুল ভূমিকা নির্বাচন করা হয়েছে।", 'error');
+                if (error || !data) {
+                    // Supabase returns error for .single() if 0 or >1 rows
+                    console.error("Login lookup error:", error);
+                    showMessage("ব্যবহারকারী পাওয়া যায়নি। সঠিক তথ্য দিন।", 'error');
                     return;
                 }
 
-                const userData = querySnapshot.docs[0].data();
-                if (userData.pin === pin) {
-                    currentUserRole = role;
-                    document.getElementById(`dash-${role}-name`).textContent = userData.name;
-                    showMessage(`${role === 'patient' ? 'রোগী' : 'ডোনার'} হিসেবে লগইন সফল।`, 'success');
-                    event.target.reset();
-                    showScreen(`${role}-dashboard`);
-                } else {
-                    showMessage("ভুল পিন। আবার চেষ্টা করুন।", 'error');
-                }
-
-            } catch (error) {
-                console.error(`Login Error (${role}):`, error);
-                showMessage("লগইন ব্যর্থ হয়েছে। ত্রুটি: " + error.message, 'error');
-            }
-        }
-
-
-        /** Hospital Login (uses License ID and pin) */
-        async function handleHospitalLogin(event) {
-            event.preventDefault();
-            const role = 'hospital';
-            const identifier = document.getElementById('hospital-login-license').value.trim();
-            const pin = document.getElementById('hospital-login-pin').value.trim();
-
-            if (!validateInput(identifier, 'text')) {
-                showMessage("হাসপাতাল লাইসেন্স নম্বর দিন।", 'error');
-                return;
-            }
-            if (!validateInput(pin, 'pin')) {
-                showMessage("সঠিক ৪-সংখ্যার পিন লিখুন।", 'error');
-                return;
-            }
-
-            try {
-                const q = query(collection(db, REGISTERED_USERS_COLLECTION),
-                    where("identifier", "==", identifier),
-                    where("role", "==", role));
-                const querySnapshot = await getDocs(q);
-
-                if (querySnapshot.empty) {
-                    showMessage("এই লাইসেন্স নম্বরটি নিবন্ধিত নয়।", 'error');
+                if (data.pin !== pin) {
+                    showMessage("পিন ভুল হয়েছে।", 'error');
                     return;
                 }
 
-                const userData = querySnapshot.docs[0].data();
-                if (userData.pin === pin) {
-                    currentUserRole = role;
-                    document.getElementById('dash-hospital-name').textContent = userData.name;
-                    showMessage("হাসপাতাল হিসেবে লগইন সফল।", 'success');
-                    event.target.reset();
-                    showScreen('hospital-dashboard');
-                } else {
-                    showMessage("ভুল পিন। আবার চেষ্টা করুন।", 'error');
-                }
+                // Login Success
+                currentUser = data;
+                currentUserRole = role;
 
+                // Update Dashboard Name
+                const dashNameEl = document.getElementById(`dash-${role}-name`);
+                if (dashNameEl) dashNameEl.textContent = data.name || data.hospital_name || "User";
 
-            } catch (error) {
-                console.error("Hospital Login Error:", error);
-                showMessage("লগইন ব্যর্থ হয়েছে। ত্রুটি: " + error.message, 'error');
+                showMessage("লগইন সফল!", 'success');
+                event.target.reset();
+                showScreen(`${role}-dashboard`);
+
+            } catch (err) {
+                console.error("Login Unexpected Error:", err);
+                showMessage("লগইন ব্যর্থ হয়েছে।", 'error');
             }
         }
 
-
-        // --- SECTION 4: REGISTRATION HANDLERS (Firestore Operations) ---
-
-        /** Generic function to handle user registration and saving data to Firestore. */
-        async function registerAndSaveUser(event, role) {
+        async function handleRegistration(event, role) {
             event.preventDefault();
-
             const form = event.target;
-            const data = {};
+            const insertData = {};
+            let table = '';
 
-            // 1. Extract common fields
-            const nameInput = document.getElementById(`${role}-name`);
-            const pinInput = document.getElementById(`${role}-pin`);
+            // Common validations could go here, but we'll specific extraction
 
-            if (nameInput) data.name = nameInput.value.trim();
-            if (pinInput) data.pin = pinInput.value.trim();
+            if (role === 'patient') {
+                table = 'patients';
+                const phone = document.getElementById('patient-phone').value.trim();
+                const pin = document.getElementById('patient-pin').value.trim();
 
-            if (!validateInput(data.name, 'text')) {
-                showMessage("নাম দিতে হবে।", 'error'); return;
-            }
-            if (!validateInput(data.pin, 'pin')) {
-                showMessage("৪-সংখ্যার পিন আবশ্যক।", 'error'); return;
-            }
-
-            let identifier, identifierType, successMessage;
-
-            if (role === 'patient' || role === 'donor') {
-                const phoneInput = document.getElementById(`${role}-phone`);
-                identifier = phoneInput.value.trim();
-                identifierType = 'phone';
-                successMessage = "নিবন্ধন সফল! এখন আপনি লগইন করতে পারেন।";
-
-                if (!validateInput(identifier, 'phone')) {
-                    showMessage("সঠিক ১১-সংখ্যার ফোন নম্বর আবশ্যক।", 'error'); return;
+                if (!validateInput(phone, 'phone') || !validateInput(pin, 'pin')) {
+                    showMessage("সঠিক ফোন ও পিন দিন।", 'error'); return;
                 }
 
-                // Extract role-specific fields
-                data.bloodGroup = document.getElementById(`${role}-blood-group`)?.value;
-                if (role === 'patient') {
-                    data.district = document.getElementById('patient-district')?.value;
-                    data.upazila = document.getElementById('patient-upazila')?.value;
-                    data.hospitalName = document.getElementById('patient-hospital-name')?.value;
-                    data.location = document.getElementById('patient-location')?.value;
-                    data.donationType = form.querySelector('input[name="donation-type"]:checked')?.value;
-                    data.additionalInfo = document.getElementById('patient-additional-info')?.value;
-                } else { // donor
-                    data.location = document.getElementById('donor-location')?.value;
-                    data.availability = document.getElementById('donor-availability')?.value;
-                    data.donationPreference = form.querySelector('input[name="donation-preference"]:checked')?.value;
+                insertData.identifier = phone;
+                insertData.pin = pin;
+                insertData.name = document.getElementById('patient-name').value.trim();
+                insertData.blood_group = document.getElementById('patient-blood-group').value;
+                insertData.district = document.getElementById('patient-district').value;
+                insertData.sub_district = document.getElementById('patient-sub-district').value; // Changed ID to match new HTML
+                insertData.address = document.getElementById('patient-address').value; // Changed ID to match new HTML
+                insertData.available_time = document.getElementById('patient-available-time').value; // New Field 
+                insertData.donation_type = form.querySelector('input[name="donation-type"]:checked')?.value;
+                insertData.additional_info = document.getElementById('patient-additional-info')?.value;
+
+            } else if (role === 'donor') {
+                table = 'donors';
+                const phone = document.getElementById('donor-phone').value.trim();
+                const pin = document.getElementById('donor-pin').value.trim();
+                if (!validateInput(phone, 'phone') || !validateInput(pin, 'pin')) {
+                    showMessage("সঠিক ফোন ও পিন দিন।", 'error'); return;
                 }
+
+                insertData.identifier = phone;
+                insertData.pin = pin;
+                insertData.name = document.getElementById('donor-name').value.trim();
+                insertData.blood_group = document.getElementById('donor-blood-group').value;
+                insertData.district = document.getElementById('donor-district').value;
+                insertData.sub_district = document.getElementById('donor-sub-district').value; // New ID
+                insertData.address = document.getElementById('donor-address').value; // New ID
+                insertData.donation_type = form.querySelector('input[name="donation-preference"]:checked')?.value;
 
             } else if (role === 'hospital') {
-                const licenseInput = document.getElementById('hospital-license');
-                const nameInputHospital = document.getElementById('hospital-name');
-                identifier = licenseInput.value.trim();
-                identifierType = 'text';
-                successMessage = "হাসপাতাল নিবন্ধন সফল! অনুরোধ জমা দেওয়া হয়েছে।";
+                table = 'hospitals';
+                const license = document.getElementById('hospital-license').value.trim();
+                const pin = document.getElementById('hospital-pin').value.trim();
 
-                if (!validateInput(identifier, 'text')) {
-                    showMessage("হাসপাতাল লাইসেন্স নম্বর দিন।", 'error'); return;
+                if (!license || !validateInput(pin, 'pin')) {
+                    showMessage("সঠিক লাইসেন্স ও পিন দিন।", 'error'); return;
                 }
 
-                data.requestType = form.querySelector('input[name="hospital-request-type"]:checked')?.value;
-                // File input simulation
+                insertData.identifier = license;
+                insertData.pin = pin;
+                insertData.hospital_name = document.getElementById('hospital-name').value.trim();
+                insertData.donation_type = form.querySelector('input[name="hospital-request-type"]:checked')?.value;
+
                 const fileInput = document.getElementById('hospital-patient-form');
-                if (!fileInput.files.length) {
-                    showMessage("রোগীর ফর্ম ও তথ্য (ফাইল) আবশ্যক।", 'error'); return;
+                if (fileInput && fileInput.files.length > 0) {
+                    insertData.patient_form_file = fileInput.files[0].name;
                 }
-                data.patientFormFileName = fileInput.files[0].name;
-
-                // Update name from name input for consistency
-                if (nameInputHospital) data.name = nameInputHospital.value.trim();
             }
 
-            data.role = role;
-            data.identifier = identifier; // Identifier (phone or license ID)
-
             try {
-                // Check if user already exists
-                const q = query(collection(db, REGISTERED_USERS_COLLECTION),
-                    where("identifier", "==", identifier),
-                    where("role", "==", role));
-                const existingUser = await getDocs(q);
-
-                if (!existingUser.empty) {
-                    showMessage(`এই ${identifierType === 'phone' ? 'ফোন নম্বর' : 'লাইসেন্স নম্বর'} দিয়ে ইতিমধ্যে অ্যাকাউন্ট আছে। অনুগ্রহ করে লগইন করুন।`, 'error');
+                // Check if already exists (optional but good UI)
+                const { data: existing } = await supabase.from(table).select('id').eq('identifier', insertData.identifier).maybeSingle();
+                if (existing) {
+                    showMessage("এই অ্যাকাউন্ট ইতিমধ্যে বিদ্যমান।", 'error');
                     return;
                 }
 
-                // Save new user data
-                await addDoc(collection(db, REGISTERED_USERS_COLLECTION), {
-                    ...data,
-                    // Store the Firestore UID as the public entry ID (optional, but good practice)
-                    firestoreId: userId,
-                    registrationTime: new Date().toISOString()
-                });
+                const { error } = await supabase.from(table).insert([insertData]);
 
-                showMessage(successMessage, 'success');
-                form.reset();
+                if (error) {
+                    console.error("Registration DB Error:", error);
+                    showMessage("নিবন্ধন ব্যর্থ: " + error.message, 'error');
+                } else {
+                    showMessage("নিবন্ধন সফল! এখন লগইন করুন।", 'success');
+                    form.reset();
+                    showScreen(`${role}-auth-selection`);
+                }
 
-                // Redirect to Auth Selection screen after successful registration
-                showScreen(`${role}-auth-selection`);
-
-            } catch (error) {
-                console.error("Registration Error:", error);
-                showMessage("নিবন্ধন ব্যর্থ হয়েছে। ত্রুটি: " + error.message, 'error');
+            } catch (err) {
+                console.error("Registration Unexpected Error:", err);
+                showMessage("ত্রুটি: " + err.message, 'error');
             }
         }
 
-
-        // --- SECTION 5: EVENT LISTENERS AND SETUP ---
-
-        function setupListeners() {
-            // Main Selection
-            document.getElementById('select-patient').addEventListener('click', () => showScreen('patient-auth-selection'));
-            document.getElementById('select-donor').addEventListener('click', () => showScreen('donor-auth-selection'));
-            document.getElementById('select-hospital').addEventListener('click', () => showScreen('hospital-auth-selection'));
-
-            // Auth Selection Buttons
-            document.getElementById('patient-login-btn').addEventListener('click', () => showScreen('patient-login-form'));
-            document.getElementById('patient-register-btn').addEventListener('click', () => showScreen('patient-form'));
-            document.getElementById('donor-login-btn').addEventListener('click', () => showScreen('donor-login-form'));
-            document.getElementById('donor-register-btn').addEventListener('click', () => showScreen('donor-form'));
-            document.getElementById('hospital-login-btn').addEventListener('click', () => showScreen('hospital-login-form'));
-            document.getElementById('hospital-register-btn').addEventListener('click', () => showScreen('hospital-form'));
-
-            // Back Buttons (Global & Auth Specific)
-            document.querySelectorAll('.back-button').forEach(button => {
-                button.addEventListener('click', () => showScreen('main-selection'));
-            });
-            document.querySelectorAll('.back-to-auth').forEach(button => {
-                button.addEventListener('click', (e) => showScreen(e.target.dataset.target));
-            });
-
-            // Login Forms Submission
-            document.getElementById('patient-login-details').addEventListener('submit', (e) => handlePhoneLogin(e, 'patient'));
-            document.getElementById('donor-login-details').addEventListener('submit', (e) => handlePhoneLogin(e, 'donor'));
-            document.getElementById('hospital-login-details').addEventListener('submit', handleHospitalLogin);
-
-            // Registration Forms Submission
-            document.getElementById('patient-form-details').addEventListener('submit', (e) => registerAndSaveUser(e, 'patient'));
-            document.getElementById('donor-form-details').addEventListener('submit', (e) => registerAndSaveUser(e, 'donor'));
-            document.getElementById('hospital-form-details').addEventListener('submit', (e) => registerAndSaveUser(e, 'hospital'));
-
-            // Dashboard Logout Buttons
-            document.getElementById('patient-logout').addEventListener('click', handleLogout);
-            document.getElementById('donor-logout').addEventListener('click', handleLogout);
-            document.getElementById('hospital-logout').addEventListener('click', handleLogout);
-
-            // Dummy OTP buttons (no real SMS sent)
-            document.getElementById('send-patient-otp')?.addEventListener('click', () => showMessage("OTP পাঠানো হয়েছে! (Simulation)", 'info'));
-            document.getElementById('send-donor-otp')?.addEventListener('click', () => showMessage("OTP পাঠানো হয়েছে! (Simulation)", 'info'));
-
+        function handleLogout() {
+            currentUser = null;
+            currentUserRole = null;
+            showMessage("লগআউট হয়েছে।", 'info');
+            showScreen('main-selection');
         }
 
-        async function handleLogout() {
-            try {
-                // Sign out the current Firebase user
-                await signOut(auth);
-                // Re-authenticate anonymously to maintain session integrity
-                await signInAnonymously(auth);
-
-                currentUserRole = null;
-                showMessage("সফলভাবে লগআউট করা হয়েছে।", 'info');
-                showScreen('main-selection');
-            } catch (error) {
-                console.error("Logout Error:", error);
-                showMessage("লগআউট ব্যর্থ হয়েছে।", 'error');
-            }
-        }
-
-
+        // --- INIT ---
         window.onload = function () {
-            setupAuthentication();
-            populateDatalists();
-            setupListeners();
-            showScreen('main-selection'); // Start on the main role selection screen
-        }
+            initSupabase();
 
+            // Populate datalists
+            const districts = ["ঢাকা", "চট্টগ্রাম", "খুলনা", "সিলেট", "রাজশাহী", "বরিশাল", "রংপুর"];
+            const subDistricts = ["মিরপুর", "গুলশান", "ধানমন্ডি", "বাড্ডা", "সাভার"]; // Simplified
+            const hospitals = ["ঢাকা মেডিকেল কলেজ", "খুলনা সিটি হাসপাতাল"];
+
+            const fillC = (id, arr) => {
+                const el = document.getElementById(id);
+                if (el) el.innerHTML = arr.map(i => `<option value="${i}">`).join('');
+            };
+            fillC('districts-list', districts);
+            fillC('upazilas-list', subDistricts);
+            fillC('hospitals-list', hospitals);
+
+            // Listeners
+            // Nav
+            document.getElementById('select-patient').onclick = () => showScreen('patient-auth-selection');
+            document.getElementById('select-donor').onclick = () => showScreen('donor-auth-selection');
+            document.getElementById('select-hospital').onclick = () => showScreen('hospital-auth-selection');
+            document.querySelectorAll('.back-button').forEach(b => b.onclick = () => showScreen('main-selection'));
+            document.querySelectorAll('.back-to-auth').forEach(b => b.onclick = (e) => showScreen(e.target.dataset.target));
+
+            // Forms - Login
+            document.getElementById('patient-login-btn').onclick = () => showScreen('patient-login-form');
+            document.getElementById('donor-login-btn').onclick = () => showScreen('donor-login-form');
+            document.getElementById('hospital-login-btn').onclick = () => showScreen('hospital-login-form');
+
+            document.getElementById('patient-login-details').onsubmit = (e) => handleLogin(e, 'patient');
+            document.getElementById('donor-login-details').onsubmit = (e) => handleLogin(e, 'donor');
+            document.getElementById('hospital-login-details').onsubmit = (e) => handleLogin(e, 'hospital');
+
+            // Forms - Register
+            document.getElementById('patient-register-btn').onclick = () => showScreen('patient-form');
+            document.getElementById('donor-register-btn').onclick = () => showScreen('donor-form');
+            document.getElementById('hospital-register-btn').onclick = () => showScreen('hospital-form');
+
+            document.getElementById('patient-form-details').onsubmit = (e) => handleRegistration(e, 'patient');
+            document.getElementById('donor-form-details').onsubmit = (e) => handleRegistration(e, 'donor');
+            document.getElementById('hospital-form-details').onsubmit = (e) => handleRegistration(e, 'hospital');
+
+            // Logout
+            document.getElementById('patient-logout').onclick = handleLogout;
+            document.getElementById('donor-logout').onclick = handleLogout;
+            document.getElementById('hospital-logout').onclick = handleLogout;
+
+            // Start
+            showScreen('main-selection');
+        };
     </script>
 </body>
 
