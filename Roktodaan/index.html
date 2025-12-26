@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>রক্তদান প্ল্যাটফর্ম</title>
+    <!-- Loading Inter font and Tailwind CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom form-radio styling for better visibility */
+        .form-radio {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border-radius: 50%;
+            border: 2px solid #D1D5DB;
+            background-color: white;
+            transition: all 0.2s ease-in-out;
+        }
+        .form-radio:checked {
+            border-color: transparent;
+            background-color: currentColor; /* Uses the text color set by Tailwind */
+            box-shadow: 0 0 0 3px white, 0 0 0 5px currentColor;
+        }
+        .form-radio:focus {
+            outline: none;
+        }
+        /* Style for the PIN/Password input to center text and limit width */
+        .pin-input {
+            text-align: center;
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-lg w-full relative">
+        
+        <!-- Message Box: Displayed by JS for feedback -->
+        <div id="message-box" class="hidden fixed top-4 left-1/2 -translate-x-1/2 z-50 p-3 rounded-lg shadow-xl transition-all duration-300 transform min-w-[300px] text-center">
+            <p id="message-text" class="text-sm font-medium"></p>
+        </div>
+        
+        <div class="text-center">
+            <h1 class="text-3xl font-bold mb-2 text-gray-800">রক্তদান প্ল্যাটফর্ম</h1>
+            <p class="text-gray-500 mb-6 text-sm sm:text-base"></p>
+        </div>
+        <!-- User ID Display: Populated by JS for sharing -->
+        <div id="userIdDisplay" class="text-xs text-gray-400 text-center mb-4 break-all p-2 bg-gray-50 rounded-lg">User ID: Loading...</div>
+
+        <!-- 1. Main Role Selection -->
+        <div id="main-selection" class="flex flex-col items-center">
+            <h2 class="text-xl sm:text-2xl font-semibold mb-6 text-gray-700">আপনি কি:</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full">
+                <button id="select-patient" class="bg-red-500 hover:bg-red-600 text-white font-bold py-3 sm:py-4 px-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105">
+                    রোগী (Patient)
+                </button>
+                <button id="select-donor" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 sm:py-4 px-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105">
+                    ডোনার (Donor)
+                </button>
+                <button id="select-hospital" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 sm:py-4 px-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105">
+                    হাসপাতাল (Hospital)
+                </button>
+            </div>
+        </div>
+        
+        <!-- 1.5. AUTH SELECTION SCREENS -->
+        
+        <!-- Patient Auth Selection -->
+        <div id="patient-auth-selection" class="hidden text-center space-y-6 pt-4">
+            <h2 class="text-2xl font-semibold text-red-600">রোগী হিসেবে এগিয়ে যান</h2>
+            <p class="text-gray-600">অনুগ্রহ করে আপনার বিকল্প নির্বাচন করুন:</p>
+            <button id="patient-login-btn" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105">
+                ইতিমধ্যে অ্যাকাউন্ট আছে? লগইন করুন
+            </button>
+            <button id="patient-register-btn" class="w-full bg-red-100 text-red-700 font-bold py-3 rounded-xl shadow-lg hover:bg-red-200 transition-all duration-300 transform hover:scale-105">
+                নতুন? নিবন্ধন করুন
+            </button>
+            <button class="back-button mt-4 w-full text-center text-gray-500 hover:text-gray-700 font-medium">← ফিরে যান</button>
+        </div>
+
+        <!-- Donor Auth Selection -->
+        <div id="donor-auth-selection" class="hidden text-center space-y-6 pt-4">
+            <h2 class="text-2xl font-semibold text-green-600">ডোনার হিসেবে এগিয়ে যান</h2>
+            <p class="text-gray-600">অনুগ্রহ করে আপনার বিকল্প নির্বাচন করুন:</p>
+            <button id="donor-login-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105">
+                ইতিমধ্যে অ্যাকাউন্ট আছে? লগইন করুন
+            </button>
+            <button id="donor-register-btn" class="w-full bg-green-100 text-green-700 font-bold py-3 rounded-xl shadow-lg hover:bg-green-200 transition-all duration-300 transform hover:scale-105">
+                নতুন? নিবন্ধন করুন
+            </button>
+            <button class="back-button mt-4 w-full text-center text-gray-500 hover:text-gray-700 font-medium">← ফিরে যান</button>
+        </div>
+
+        <!-- Hospital Auth Selection -->
+        <div id="hospital-auth-selection" class="hidden text-center space-y-6 pt-4">
+            <h2 class="text-2xl font-semibold text-blue-600">হাসপাতাল হিসেবে এগিয়ে যান</h2>
+            <p class="text-gray-600">অনুগ্রহ করে আপনার বিকল্প নির্বাচন করুন:</p>
+            <button id="hospital-login-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105">
+                ইতিমধ্যে অ্যাকাউন্ট আছে? লগইন করুন
+            </button>
+            <button id="hospital-register-btn" class="w-full bg-blue-100 text-blue-700 font-bold py-3 rounded-xl shadow-lg hover:bg-blue-200 transition-all duration-300 transform hover:scale-105">
+                নতুন? নিবন্ধন করুন
+            </button>
+            <button class="back-button mt-4 w-full text-center text-gray-500 hover:text-gray-700 font-medium">← ফিরে যান</button>
+        </div>
+
+
+        <!-- 2. LOGIN FORMS -->
+
+        <!-- 2.1. Patient Login Form -->
+        <div id="patient-login-form" class="hidden">
+            <h2 class="text-2xl font-semibold mb-6 text-red-600 text-center">রোগী লগইন</h2>
+            <form id="patient-login-details" class="space-y-4">
+                <div>
+                    <label for="patient-login-phone" class="block text-sm font-medium text-gray-700 mb-1">ফোন নম্বর</label>
+                    <input type="tel" id="patient-login-phone" placeholder="ফোন নম্বর (যেমন: 01xxxxxxxxx)" required class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200">
+                </div>
+                <div>
+                    <label for="patient-login-pin" class="block text-sm font-medium text-gray-700 mb-1">৪-সংখ্যার পিন/পাসওয়ার্ড</label>
+                    <input type="password" id="patient-login-pin" placeholder="••••" required maxlength="4" class="pin-input w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200">
+                </div>
+                <button type="submit" id="patient-login-submit-btn" class="w-full bg-red-500 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-red-600 transition-all duration-200 transform hover:scale-105">লগইন করুন</button>
+            </form>
+            <button class="back-to-auth mt-4 w-full text-center text-gray-500 hover:text-gray-700 font-medium" data-target="patient-auth-selection">← ফিরে যান</button>
+        </div>
+
+        <!-- 2.2. Donor Login Form -->
+        <div id="donor-login-form" class="hidden">
+            <h2 class="text-2xl font-semibold mb-6 text-green-600 text-center">ডোনার লগইন</h2>
+            <form id="donor-login-details" class="space-y-4">
+                <div>
+                    <label for="donor-login-phone" class="block text-sm font-medium text-gray-700 mb-1">ফোন নম্বর</label>
+                    <input type="tel" id="donor-login-phone" placeholder="ফোন নম্বর (যেমন: 01xxxxxxxxx)" required class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200">
+                </div>
+                <div>
+                    <label for="donor-login-pin" class="block text-sm font-medium text-gray-700 mb-1">৪-সংখ্যার পিন/পাসওয়ার্ড</label>
+                    <input type="password" id="donor-login-pin" placeholder="••••" required maxlength="4" class="pin-input w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200">
+                </div>
+                <button type="submit" id="donor-login-submit-btn" class="w-full bg-green-500 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-green-600 transition-all duration-200 transform hover:scale-105">লগইন করুন</button>
+            </form>
+            <button class="back-to-auth mt-4 w-full text-center text-gray-500 hover:text-gray-700 font-medium" data-target="donor-auth-selection">← ফিরে যান</button>
+        </div>
+
+        <!-- 2.3. Hospital Login Form -->
+        <div id="hospital-login-form" class="hidden">
+            <h2 class="text-2xl font-semibold mb-6 text-blue-600 text-center">হাসপাতাল লগইন</h2>
+            <form id="hospital-login-details" class="space-y-4">
+                <div>
+                    <label for="hospital-login-license" class="block text-sm font-medium text-gray-700 mb-1">হাসপাতাল লাইসেন্স নম্বর (ID)</label>
+                    <input type="text" id="hospital-login-license" placeholder="লাইসেন্স নম্বর" required class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200">
+                </div>
+                <div>
+                    <label for="hospital-login-pin" class="block text-sm font-medium text-gray-700 mb-1">৪-সংখ্যার পিন/পাসওয়ার্ড</label>
+                    <input type="password" id="hospital-login-pin" placeholder="••••" required maxlength="4" class="pin-input w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200">
+                </div>
+                <button type="submit" id="hospital-login-submit-btn" class="w-full bg-blue-500 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-blue-600 transition-all duration-200 transform hover:scale-105">লগইন করুন</button>
+            </form>
+            <button class="back-to-auth mt-4 w-full text-center text-gray-500 hover:text-gray-700 font-medium" data-target="hospital-auth-selection">← ফিরে যান</button>
+        </div>
+
+
+        <!-- 3. REGISTRATION FORMS -->
+
+        <!-- 3.1. Patient Registration Form -->
+        <div id="patient-form" class="hidden">
+            <h2 class="text-2xl font-semibold mb-6 text-red-700 text-center">রোগী নিবন্ধন: রক্ত প্রয়োজন?</h2>
+            <form id="patient-form-details" class="space-y-4">
+                <div>
+                    <label for="patient-name" class="block text-sm font-medium text-gray-700 mb-1">আপনার নাম</label>
+                    <input type="text" id="patient-name" required class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200">
+                </div>
+                <div>
+                    <label for="patient-phone" class="block text-sm font-medium text-gray-700 mb-1">ফোন নম্বর</label>
+                    <div class="flex items-center space-x-2">
+                        <input type="tel" id="patient-phone" placeholder="ফোন নম্বর (যেমন: 01xxxxxxxxx)" required class="flex-grow px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200">
+                        <button type="button" id="send-patient-otp" class="bg-red-200 text-red-700 px-4 py-2 rounded-xl text-sm hover:bg-red-300 transition-all duration-200">OTP পাঠান (Simulated)</button>
+                    </div>
+                </div>
+                <div>
+                    <label for="patient-pin" class="block text-sm font-medium text-gray-700 mb-1">৪-সংখ্যার পিন (লগইন এর জন্য)</label>
+                    <input type="password" id="patient-pin" placeholder="••••" required minlength="4" maxlength="4" pattern="\d{4}" title="৪টি সংখ্যা লিখুন" class="pin-input w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200">
+                </div>
+                <div>
+                    <label for="patient-blood-group" class="block text-sm font-medium text-gray-700 mb-1">রক্তের গ্রুপ</label>
+                    <select id="patient-blood-group" required class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200">
+                        <option value="">একটি রক্তের গ্রুপ নির্বাচন করুন</option>
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
+                    </select>
+                </div>
+                <!-- Location Fields (District, Upazila, Hospital, Location) -->
+                <div><label for="patient-district" class="block text-sm font-medium text-gray-700 mb-1">জেলা</label><input list="districts-list" id="patient-district" placeholder="জেলা টাইপ বা নির্বাচন করুন" required class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"><datalist id="districts-list"></datalist></div>
+                <div><label for="patient-upazila" class="block text-sm font-medium text-gray-700 mb-1">উপজেলা</label><input list="upazilas-list" id="patient-upazila" placeholder="উপজেলা টাইপ বা নির্বাচন করুন" required class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"><datalist id="upazilas-list"></datalist></div>
+                <div><label for="patient-hospital-name" class="block text-sm font-medium text-gray-700 mb-1">হাসপাতালের নাম</label><input list="hospitals-list" id="patient-hospital-name" placeholder="হাসপাতাল টাইপ বা নির্বাচন করুন" required class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"><datalist id="hospitals-list"></datalist></div>
+                <div class="space-y-2"><label for="patient-location" class="block text-sm font-medium text-gray-700 mb-1">ঠিকানা / এলাকা (Address/Area)</label><input type="text" id="patient-location" required class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200" placeholder="যেমন: বাসা ১২, সড়ক ৫, মিরপুর, ঢাকা"></div>
+                
+                <div class="space-y-2">
+                    <p class="block text-sm font-medium text-gray-700">ডোনেশনের ধরণ (Donation Type)</p>
+                    <label class="flex items-center space-x-2 text-gray-600"><input type="radio" name="donation-type" value="free" class="form-radio text-red-500" checked><span>আমার একটি বিনামূল্যে ডোনেশন প্রয়োজন</span></label>
+                    <label class="flex items-center space-x-2 text-gray-600"><input type="radio" name="donation-type" value="paid" class="form-radio text-red-500"><span>আমি রক্ত কিনতে ইচ্ছুক</span></label>
+                    <label class="flex items-center space-x-2 text-gray-600"><input type="radio" name="donation-type" value="either" class="form-radio text-red-500"><span>আমি যেকোনোটির জন্য খোলা</span></label>
+                </div>
+                <div>
+                    <label for="patient-additional-info" class="block text-sm font-medium text-gray-700 mb-1">অতিরিক্ত তথ্য (ঐচ্ছিক)</label>
+                    <textarea id="patient-additional-info" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"></textarea>
+                </div>
+                <button type="submit" id="patient-submit-btn" class="w-full bg-red-500 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-red-600 transition-all duration-200 transform hover:scale-105">অনুরোধ জমা দিন</button>
+            </form>
+            <button class="back-to-auth mt-4 w-full text-center text-gray-500 hover:text-gray-700 font-medium" data-target="patient-auth-selection">← ফিরে যান</button>
+        </div>
+
+        <!-- 3.2. Donor Registration Form -->
+        <div id="donor-form" class="hidden">
+            <h2 class="text-2xl font-semibold mb-6 text-green-700 text-center">ডোনার নিবন্ধন: ডোনার হতে চান?</h2>
+            <form id="donor-form-details" class="space-y-4">
+                <div><label for="donor-name" class="block text-sm font-medium text-gray-700 mb-1">আপনার নাম</label><input type="text" id="donor-name" required class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200"></div>
+                <div>
+                    <label for="donor-phone" class="block text-sm font-medium text-gray-700 mb-1">ফোন নম্বর</label>
+                    <div class="flex items-center space-x-2">
+                        <input type="tel" id="donor-phone" placeholder="ফোন নম্বর (যেমন: 01xxxxxxxxx)" required class="flex-grow px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200">
+                        <button type="button" id="send-donor-otp" class="bg-green-200 text-green-700 px-4 py-2 rounded-xl text-sm hover:bg-green-300 transition-all duration-200">OTP পাঠান (Simulated)</button>
+                    </div>
+                </div>
+                <div>
+                    <label for="donor-pin" class="block text-sm font-medium text-gray-700 mb-1">৪-সংখ্যার পিন (লগইন এর জন্য)</label>
+                    <input type="password" id="donor-pin" placeholder="••••" required minlength="4" maxlength="4" pattern="\d{4}" title="৪টি সংখ্যা লিখুন" class="pin-input w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200">
+                </div>
+                <div>
+                    <label for="donor-blood-group" class="block text-sm font-medium text-gray-700 mb-1">রক্তের গ্রুপ</label>
+                    <select id="donor-blood-group" required class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200">
+                        <option value="">একটি রক্তের গ্রুপ নির্বাচন করুন</option>
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
+                    </select>
+                </div>
+                <div class="space-y-2"><label for="donor-location" class="block text-sm font-medium text-gray-700 mb-1">জেলা / শহর</label><input type="text" id="donor-location" required class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200" placeholder="যেমন: ঢাকা"></div>
+                <div><label for="donor-availability" class="block text-sm font-medium text-gray-700 mb-1">ফাঁকা সময় / প্রাপ্যতা</label><input type="text" id="donor-availability" placeholder="যেমন: সপ্তাহান্তে, সন্ধ্যা ৫ টার পর" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200"></div>
+                
+                <div class="space-y-2">
+                    <p class="block text-sm font-medium text-gray-700">ডোনেশনের অগ্রাধিকার</p>
+                    <label class="flex items-center space-x-2 text-gray-600"><input type="radio" name="donation-preference" value="free" class="form-radio text-green-500" checked><span>আমি বিনামূল্যে দান করতে চাই</span></label>
+                    <label class="flex items-center space-x-2 text-gray-600"><input type="radio" name="donation-preference" value="sell" class="form-radio text-green-500"><span>আমি আমার রক্ত বিক্রি করতে চাই</span></label>
+                    <label class="flex items-center space-x-2 text-gray-600"><input type="radio" name="donation-preference" value="both" class="form-radio text-green-500"><span>আমি উভয়ের জন্য উপলব্ধ</span></label>
+                </div>
+                <button type="submit" id="donor-submit-btn" class="w-full bg-green-500 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-green-600 transition-all duration-200 transform hover:scale-105">ডোনার হিসেবে নিবন্ধন করুন</button>
+            </form>
+            <button class="back-to-auth mt-4 w-full text-center text-gray-500 hover:text-gray-700 font-medium" data-target="donor-auth-selection">← ফিরে যান</button>
+        </div>
+        
+        <!-- 3.3. Hospital Registration Form -->
+        <div id="hospital-form" class="hidden">
+            <h2 class="text-2xl font-semibold mb-6 text-blue-700 text-center">হাসপাতাল নিবন্ধন: রক্তের জন্য অনুরোধ</h2>
+            <form id="hospital-form-details" class="space-y-4">
+                <div><label for="hospital-name" class="block text-sm font-medium text-gray-700 mb-1">আপনার হাসপাতালের নাম</label><input type="text" id="hospital-name" required class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"></div>
+                <div><label for="hospital-license" class="block text-sm font-medium text-gray-700 mb-1">হাসপাতাল লাইসেন্স নম্বর (ID)</label><input type="text" id="hospital-license" placeholder="লাইসেন্স নম্বর" required class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"></div>
+                <div>
+                    <label for="hospital-pin" class="block text-sm font-medium text-gray-700 mb-1">৪-সংখ্যার পিন (লগইন এর জন্য)</label>
+                    <input type="password" id="hospital-pin" placeholder="••••" required minlength="4" maxlength="4" pattern="\d{4}" title="৪টি সংখ্যা লিখুন" class="pin-input w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200">
+                </div>
+                
+                <div class="space-y-2">
+                    <p class="block text-sm font-medium text-gray-700">অনুরোধের ধরণ</p>
+                    <label class="flex items-center space-x-2 text-gray-600"><input type="radio" name="hospital-request-type" value="free" class="form-radio text-blue-500" checked><span>বিনামূল্যে ডোনেশনের জন্য অনুরোধ</span></label>
+                    <label class="flex items-center space-x-2 text-gray-600"><input type="radio" name="hospital-request-type" value="paid" class="form-radio text-blue-500"><span>কেনা রক্তের জন্য অনুরোধ</span></label>
+                </div>
+                <div>
+                    <label for="hospital-patient-form" class="block text-sm font-medium text-gray-700 mb-1">রোগীর ফর্ম ও তথ্য (একটি ছবি হিসেবে)</label>
+                    <input type="file" id="hospital-patient-form" required accept="image/*" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200">
+                    <p class="text-xs text-gray-400 mt-1">
+                        **ফাইল আপলোড সিমুলেটেড।**
+                    </p>
+                </div>
+                <button type="submit" id="hospital-submit-btn" class="w-full bg-blue-500 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-blue-600 transition-all duration-200 transform hover:scale-105">অনুরোধ জমা দিন</button>
+                <div id="receipt-message" class="hidden mt-4 p-4 rounded-xl bg-green-100 text-green-700">
+                    <p>
+                        **সিমুলেটেড রসিদ:** রোগীর ফোনে একটি স্বয়ংক্রিয় রসিদ বার্তা পাঠানো হয়েছে।
+                    </p>
+                </div>
+            </form>
+            <button class="back-to-auth mt-4 w-full text-center text-gray-500 hover:text-gray-700 font-medium" data-target="hospital-auth-selection">← ফিরে যান</button>
+        </div>
+
+        <!-- 4. DASHBOARD SCREENS (New Feature) -->
+
+        <!-- 4.1. Patient Dashboard -->
+        <div id="patient-dashboard" class="hidden">
+            <h2 class="text-2xl font-semibold mb-6 text-red-600 text-center">রোগী ড্যাশবোর্ড</h2>
+            <div class="bg-red-50 p-4 rounded-xl space-y-4">
+                <p class="text-lg font-bold text-red-700">স্বাগতম, <span id="dash-patient-name">রোগী!</span></p>
+                <p class="text-sm text-gray-600">আপনি আপনার বর্তমান **রক্তের অনুরোধের স্থিতি** এবং **ড্রাফ্ট রিকুয়েস্টগুলি** এখানে দেখতে পাবেন।</p>
+                <div class="space-y-2">
+                    <h3 class="font-medium text-red-600">বর্তমান অনুরোধ (একটি)</h3>
+                    <div class="p-3 bg-white rounded-lg shadow-sm border border-red-200">
+                        <p class="text-sm font-medium">রক্তের গ্রুপ: B+ | অবস্থা: **ম্যাচিং হচ্ছে...**</p>
+                        <p class="text-xs text-gray-500 mt-1">তারিখ: ২০২৫/১১/০৬ | হাসপাতাল: ঢাকা মেডিকেল কলেজ</p>
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <h3 class="font-medium text-red-600">ড্রাফ্ট রিকুয়েস্ট</h3>
+                    <div class="p-3 bg-gray-100 rounded-lg shadow-inner">
+                        <p class="text-sm text-gray-700">একটি O- রক্তের জন্য অনুরোধের ড্রাফ্ট সেভ করা আছে।</p>
+                        <button class="text-xs text-red-500 hover:text-red-700 mt-1">সম্পূর্ণ করুন/মুছুন</button>
+                    </div>
+                </div>
+            </div>
+            <button id="patient-logout" class="w-full bg-gray-200 text-gray-700 font-bold py-3 rounded-xl shadow-lg hover:bg-gray-300 transition-all duration-200 mt-6">লগআউট</button>
+        </div>
+
+        <!-- 4.2. Donor Dashboard -->
+        <div id="donor-dashboard" class="hidden">
+            <h2 class="text-2xl font-semibold mb-6 text-green-600 text-center">ডোনার ড্যাশবোর্ড</h2>
+            <div class="bg-green-50 p-4 rounded-xl space-y-4">
+                <p class="text-lg font-bold text-green-700">স্বাগতম, <span id="dash-donor-name">ডোনার!</span></p>
+                <p class="text-sm text-gray-600">এখানে আপনি আপনার **প্রাপ্যতা** এবং **নতুন অনুরোধগুলি** দেখতে পাবেন।</p>
+                <div class="space-y-2">
+                    <h3 class="font-medium text-green-600">নিকটবর্তী অনুরোধ</h3>
+                    <div class="p-3 bg-white rounded-lg shadow-sm border border-green-200">
+                        <p class="text-sm font-medium">রক্তের গ্রুপ: A+ প্রয়োজন। (খুলনা সিটি হাসপাতাল)</p>
+                        <p class="text-xs text-gray-500 mt-1">তাড়াতাড়ি প্রয়োজন। যোগাযোগের জন্য ক্লিক করুন।</p>
+                        <button class="text-xs text-green-500 hover:text-green-700 mt-2">যোগাযোগ করুন</button>
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <h3 class="font-medium text-green-600">ডোনেশন হিস্টরি (ড্রাফ্ট)</h3>
+                    <div class="p-3 bg-gray-100 rounded-lg shadow-inner">
+                        <p class="text-sm text-gray-700">সেপ্টেম্বর মাসে ২ বার ডোনেশন করা হয়েছিল।</p>
+                        <button class="text-xs text-green-500 hover:text-green-700 mt-1">সম্পূর্ণ হিস্টরি দেখুন</button>
+                    </div>
+                </div>
+            </div>
+            <button id="donor-logout" class="w-full bg-gray-200 text-gray-700 font-bold py-3 rounded-xl shadow-lg hover:bg-gray-300 transition-all duration-200 mt-6">লগআউট</button>
+        </div>
+
+        <!-- 4.3. Hospital Dashboard -->
+        <div id="hospital-dashboard" class="hidden">
+            <h2 class="text-2xl font-semibold mb-6 text-blue-600 text-center">হাসপাতাল ড্যাশবোর্ড</h2>
+            <div class="bg-blue-50 p-4 rounded-xl space-y-4">
+                <p class="text-lg font-bold text-blue-700">স্বাগতম, <span id="dash-hospital-name">হাসপাতাল!</span></p>
+                <p class="text-sm text-gray-600">এখানে আপনি **ডোনার ম্যাচিং** এবং **পেণ্ডিং রিকুয়েস্ট** দেখতে পাবেন।</p>
+                <div class="space-y-2">
+                    <h3 class="font-medium text-blue-600">পেণ্ডিং অনুরোধ</h3>
+                    <div class="p-3 bg-white rounded-lg shadow-sm border border-blue-200">
+                        <p class="text-sm font-medium">রোগী: #৭৮৯ | রক্তের গ্রুপ: O-</p>
+                        <p class="text-xs text-gray-500 mt-1">অবস্থা: ৩ জন ডোনারের সাথে ম্যাচিং হয়েছে।</p>
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <h3 class="font-medium text-blue-600">ড্রাফ্ট রিপোর্ট</h3>
+                    <div class="p-3 bg-gray-100 rounded-lg shadow-inner">
+                        <p class="text-sm text-gray-700">অসম্পূর্ণ ডোনার ম্যাচিং রিপোর্ট সেভ করা আছে।</p>
+                        <button class="text-xs text-blue-500 hover:text-blue-700 mt-1">সম্পূর্ণ করুন</button>
+                    </div>
+                </div>
+            </div>
+            <button id="hospital-logout" class="w-full bg-gray-200 text-gray-700 font-bold py-3 rounded-xl shadow-lg hover:bg-gray-300 transition-all duration-200 mt-6">লগআউট</button>
+        </div>
+    </div>
+    
+    <!-- JavaScript Code (Handles all logic and simulation) -->
+    <script type="module">
+        // --- SECTION 1: FIREBASE INITIALIZATION AND AUTHENTICATION ---
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, addDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        // GLOBAL CANVAS VARIABLES (Mandatory to use)
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        let app, db, auth;
+        let userId = null;
+        let currentUserRole = null; // Stores 'patient', 'donor', or 'hospital'
+
+        // Firestore Paths (using public collection for shared login data)
+        const REGISTERED_USERS_COLLECTION = `artifacts/${appId}/public/data/registered_users`;
+
+        /** Initializes Firebase and sets up authentication. */
+        async function setupAuthentication() {
+            try {
+                if (Object.keys(firebaseConfig).length === 0) {
+                    console.error("Firebase config is missing.");
+                    showMessage("Firebase কনফিগারেশন পাওয়া যায়নি। ডেটা সংরক্ষণ হবে না।", 'error');
+                    return;
+                }
+
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                // Sign in using custom token or anonymously
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        document.getElementById('userIdDisplay').innerHTML = `**User ID:** ${userId}`;
+                        console.log("Firebase Auth Ready. UID:", userId);
+                    } else {
+                        userId = null;
+                        document.getElementById('userIdDisplay').innerHTML = `**User ID:** Anonymous`;
+                        console.log("User logged out or anonymous.");
+                    }
+                });
+
+            } catch (error) {
+                console.error("Error setting up Firebase:", error);
+                showMessage("Firebase সংযোগ ব্যর্থ: " + error.message, 'error');
+            }
+        }
+        
+        /** General data validation (simple check for phone/pin/text format) */
+        function validateInput(value, type) {
+            if (!value) return false;
+            switch (type) {
+                case 'phone':
+                    // Basic check for Bangladesh phone number format (starting with 01 and 11 digits)
+                    return /^01\d{9}$/.test(value);
+                case 'pin':
+                    // Exactly 4 digits
+                    return /^\d{4}$/.test(value);
+                case 'text':
+                    // Not empty and not just spaces
+                    return value.trim().length > 0;
+                default:
+                    return true;
+            }
+        }
+
+        // --- SECTION 2: UI UTILITIES AND NAVIGATION ---
+
+        /** Shows a temporary message box on the screen. */
+        function showMessage(text, type = 'success') {
+            const msgBox = document.getElementById('message-box');
+            const msgText = document.getElementById('message-text');
+            
+            msgText.textContent = text;
+            // Reset classes
+            msgBox.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-50 p-3 rounded-lg shadow-xl transition-all duration-300 transform min-w-[300px] text-center';
+            
+            if (type === 'error') {
+                msgBox.classList.add('bg-red-100', 'text-red-700');
+            } else if (type === 'success') {
+                msgBox.classList.add('bg-green-100', 'text-green-700');
+            } else {
+                 msgBox.classList.add('bg-yellow-100', 'text-yellow-700');
+            }
+            
+            msgBox.classList.remove('hidden');
+
+            setTimeout(() => {
+                msgBox.classList.add('hidden');
+            }, 5000);
+        }
+
+        /** Controls the visibility of the main UI sections. */
+        function showScreen(screenId) {
+            const screens = [
+                'main-selection', 'patient-auth-selection', 'donor-auth-selection', 'hospital-auth-selection', 
+                'patient-login-form', 'donor-login-form', 'hospital-login-form',
+                'patient-form', 'donor-form', 'hospital-form',
+                'patient-dashboard', 'donor-dashboard', 'hospital-dashboard'
+            ];
+            screens.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.classList.toggle('hidden', id !== screenId);
+                }
+            });
+            document.getElementById('receipt-message')?.classList.add('hidden');
+        }
+
+        /** Simulates location data for datalists. */
+        function populateDatalists() {
+            const districts = ["ঢাকা", "চট্টগ্রাম", "খুলনা", "সিলেট", "রাজশাহী", "বরিশাল", "রংপুর"];
+            const hospitals = ["ঢাকা মেডিকেল কলেজ হাসপাতাল", "বঙ্গবন্ধু শেখ মুজিব মেডিকেল বিশ্ববিদ্যালয়", "জাতীয় হৃদরোগ ইনস্টিটিউট", "সিলেট এমএজি ওসমানী মেডিকেল কলেজ", "খুলনা সিটি হাসপাতাল", "রাজশাহী মেডিকেল কলেজ হাসপাতাল"];
+            const upazilas = ["মিরপুর", "গুলশান", "ধানমন্ডি", "বাড্ডা", "সাভার", "পাহাড়তলী", "জালালাবাদ"]; 
+
+            // Helper function to apply data
+            const applyData = (id, data) => {
+                const datalist = document.getElementById(id);
+                if (datalist) datalist.innerHTML = data.map(item => `<option value="${item}">`).join('');
+            };
+
+            applyData('districts-list', districts);
+            applyData('hospitals-list', hospitals);
+            applyData('upazilas-list', upazilas);
+        }
+
+        // --- SECTION 3: LOGIN HANDLERS (Firestore Operations) ---
+        
+        /** Generic function to handle user login for Patient and Donor (uses phone/pin) */
+        async function handlePhoneLogin(event, role) {
+            event.preventDefault();
+            const identifier = document.getElementById(`${role}-login-phone`).value.trim();
+            const pin = document.getElementById(`${role}-login-pin`).value.trim();
+            
+            if (!validateInput(identifier, 'phone')) {
+                showMessage("সঠিক ১১-সংখ্যার ফোন নম্বর লিখুন।", 'error');
+                return;
+            }
+            if (!validateInput(pin, 'pin')) {
+                showMessage("সঠিক ৪-সংখ্যার পিন লিখুন।", 'error');
+                return;
+            }
+
+            try {
+                const q = query(collection(db, REGISTERED_USERS_COLLECTION), 
+                                where("identifier", "==", identifier),
+                                where("role", "==", role));
+                const querySnapshot = await getDocs(q);
+
+                if (querySnapshot.empty) {
+                    showMessage("এই ফোন নম্বরটি নিবন্ধিত নয়, অথবা ভুল ভূমিকা নির্বাচন করা হয়েছে।", 'error');
+                    return;
+                }
+
+                const userData = querySnapshot.docs[0].data();
+                if (userData.pin === pin) {
+                    currentUserRole = role;
+                    document.getElementById(`dash-${role}-name`).textContent = userData.name;
+                    showMessage(`${role === 'patient' ? 'রোগী' : 'ডোনার'} হিসেবে লগইন সফল।`, 'success');
+                    event.target.reset();
+                    showScreen(`${role}-dashboard`);
+                } else {
+                    showMessage("ভুল পিন। আবার চেষ্টা করুন।", 'error');
+                }
+
+            } catch (error) {
+                console.error(`Login Error (${role}):`, error);
+                showMessage("লগইন ব্যর্থ হয়েছে। ত্রুটি: " + error.message, 'error');
+            }
+        }
+
+
+        /** Hospital Login (uses License ID and pin) */
+        async function handleHospitalLogin(event) {
+            event.preventDefault();
+            const role = 'hospital';
+            const identifier = document.getElementById('hospital-login-license').value.trim();
+            const pin = document.getElementById('hospital-login-pin').value.trim();
+            
+            if (!validateInput(identifier, 'text')) {
+                showMessage("হাসপাতাল লাইসেন্স নম্বর দিন।", 'error');
+                return;
+            }
+            if (!validateInput(pin, 'pin')) {
+                showMessage("সঠিক ৪-সংখ্যার পিন লিখুন।", 'error');
+                return;
+            }
+
+            try {
+                const q = query(collection(db, REGISTERED_USERS_COLLECTION), 
+                                where("identifier", "==", identifier),
+                                where("role", "==", role));
+                const querySnapshot = await getDocs(q);
+
+                if (querySnapshot.empty) {
+                    showMessage("এই লাইসেন্স নম্বরটি নিবন্ধিত নয়।", 'error');
+                    return;
+                }
+
+                const userData = querySnapshot.docs[0].data();
+                if (userData.pin === pin) {
+                    currentUserRole = role;
+                    document.getElementById('dash-hospital-name').textContent = userData.name;
+                    showMessage("হাসপাতাল হিসেবে লগইন সফল।", 'success');
+                    event.target.reset();
+                    showScreen('hospital-dashboard');
+                } else {
+                    showMessage("ভুল পিন। আবার চেষ্টা করুন।", 'error');
+                }
+
+            } catch (error) {
+                console.error("Hospital Login Error:", error);
+                showMessage("লগইন ব্যর্থ হয়েছে। ত্রুটি: " + error.message, 'error');
+            }
+        }
+
+
+        // --- SECTION 4: REGISTRATION HANDLERS (Firestore Operations) ---
+
+        /** Generic function to handle user registration and saving data to Firestore. */
+        async function registerAndSaveUser(event, role) {
+            event.preventDefault();
+            
+            const form = event.target;
+            const data = {};
+
+            // 1. Extract common fields
+            const nameInput = document.getElementById(`${role}-name`);
+            const pinInput = document.getElementById(`${role}-pin`);
+            
+            if (nameInput) data.name = nameInput.value.trim();
+            if (pinInput) data.pin = pinInput.value.trim();
+            
+            if (!validateInput(data.name, 'text')) {
+                showMessage("নাম দিতে হবে।", 'error'); return;
+            }
+            if (!validateInput(data.pin, 'pin')) {
+                showMessage("৪-সংখ্যার পিন আবশ্যক।", 'error'); return;
+            }
+
+            let identifier, identifierType, successMessage;
+
+            if (role === 'patient' || role === 'donor') {
+                const phoneInput = document.getElementById(`${role}-phone`);
+                identifier = phoneInput.value.trim();
+                identifierType = 'phone';
+                successMessage = "নিবন্ধন সফল! এখন আপনি লগইন করতে পারেন।";
+
+                if (!validateInput(identifier, 'phone')) {
+                    showMessage("সঠিক ১১-সংখ্যার ফোন নম্বর আবশ্যক।", 'error'); return;
+                }
+                
+                // Extract role-specific fields
+                data.bloodGroup = document.getElementById(`${role}-blood-group`)?.value;
+                if (role === 'patient') {
+                    data.district = document.getElementById('patient-district')?.value;
+                    data.upazila = document.getElementById('patient-upazila')?.value;
+                    data.hospitalName = document.getElementById('patient-hospital-name')?.value;
+                    data.location = document.getElementById('patient-location')?.value;
+                    data.donationType = form.querySelector('input[name="donation-type"]:checked')?.value;
+                    data.additionalInfo = document.getElementById('patient-additional-info')?.value;
+                } else { // donor
+                    data.location = document.getElementById('donor-location')?.value;
+                    data.availability = document.getElementById('donor-availability')?.value;
+                    data.donationPreference = form.querySelector('input[name="donation-preference"]:checked')?.value;
+                }
+
+            } else if (role === 'hospital') {
+                const licenseInput = document.getElementById('hospital-license');
+                const nameInputHospital = document.getElementById('hospital-name');
+                identifier = licenseInput.value.trim();
+                identifierType = 'text';
+                successMessage = "হাসপাতাল নিবন্ধন সফল! অনুরোধ জমা দেওয়া হয়েছে।";
+                
+                if (!validateInput(identifier, 'text')) {
+                    showMessage("হাসপাতাল লাইসেন্স নম্বর দিন।", 'error'); return;
+                }
+
+                data.requestType = form.querySelector('input[name="hospital-request-type"]:checked')?.value;
+                // File input simulation
+                const fileInput = document.getElementById('hospital-patient-form');
+                if (!fileInput.files.length) {
+                    showMessage("রোগীর ফর্ম ও তথ্য (ফাইল) আবশ্যক।", 'error'); return;
+                }
+                data.patientFormFileName = fileInput.files[0].name;
+
+                // Update name from name input for consistency
+                if (nameInputHospital) data.name = nameInputHospital.value.trim();
+            }
+
+            data.role = role;
+            data.identifier = identifier; // Identifier (phone or license ID)
+
+            try {
+                // Check if user already exists
+                const q = query(collection(db, REGISTERED_USERS_COLLECTION), 
+                                where("identifier", "==", identifier),
+                                where("role", "==", role));
+                const existingUser = await getDocs(q);
+
+                if (!existingUser.empty) {
+                    showMessage(`এই ${identifierType === 'phone' ? 'ফোন নম্বর' : 'লাইসেন্স নম্বর'} দিয়ে ইতিমধ্যে অ্যাকাউন্ট আছে। অনুগ্রহ করে লগইন করুন।`, 'error');
+                    return;
+                }
+                
+                // Save new user data
+                await addDoc(collection(db, REGISTERED_USERS_COLLECTION), {
+                    ...data,
+                    // Store the Firestore UID as the public entry ID (optional, but good practice)
+                    firestoreId: userId,
+                    registrationTime: new Date().toISOString()
+                });
+
+                showMessage(successMessage, 'success');
+                form.reset();
+                
+                // Redirect to Auth Selection screen after successful registration
+                showScreen(`${role}-auth-selection`);
+
+            } catch (error) {
+                console.error("Registration Error:", error);
+                showMessage("নিবন্ধন ব্যর্থ হয়েছে। ত্রুটি: " + error.message, 'error');
+            }
+        }
+
+
+        // --- SECTION 5: EVENT LISTENERS AND SETUP ---
+
+        function setupListeners() {
+            // Main Selection
+            document.getElementById('select-patient').addEventListener('click', () => showScreen('patient-auth-selection'));
+            document.getElementById('select-donor').addEventListener('click', () => showScreen('donor-auth-selection'));
+            document.getElementById('select-hospital').addEventListener('click', () => showScreen('hospital-auth-selection'));
+
+            // Auth Selection Buttons
+            document.getElementById('patient-login-btn').addEventListener('click', () => showScreen('patient-login-form'));
+            document.getElementById('patient-register-btn').addEventListener('click', () => showScreen('patient-form'));
+            document.getElementById('donor-login-btn').addEventListener('click', () => showScreen('donor-login-form'));
+            document.getElementById('donor-register-btn').addEventListener('click', () => showScreen('donor-form'));
+            document.getElementById('hospital-login-btn').addEventListener('click', () => showScreen('hospital-login-form'));
+            document.getElementById('hospital-register-btn').addEventListener('click', () => showScreen('hospital-form'));
+
+            // Back Buttons (Global & Auth Specific)
+            document.querySelectorAll('.back-button').forEach(button => {
+                button.addEventListener('click', () => showScreen('main-selection'));
+            });
+            document.querySelectorAll('.back-to-auth').forEach(button => {
+                button.addEventListener('click', (e) => showScreen(e.target.dataset.target));
+            });
+
+            // Login Forms Submission
+            document.getElementById('patient-login-details').addEventListener('submit', (e) => handlePhoneLogin(e, 'patient'));
+            document.getElementById('donor-login-details').addEventListener('submit', (e) => handlePhoneLogin(e, 'donor'));
+            document.getElementById('hospital-login-details').addEventListener('submit', handleHospitalLogin);
+
+            // Registration Forms Submission
+            document.getElementById('patient-form-details').addEventListener('submit', (e) => registerAndSaveUser(e, 'patient'));
+            document.getElementById('donor-form-details').addEventListener('submit', (e) => registerAndSaveUser(e, 'donor'));
+            document.getElementById('hospital-form-details').addEventListener('submit', (e) => registerAndSaveUser(e, 'hospital'));
+
+            // Dashboard Logout Buttons
+            document.getElementById('patient-logout').addEventListener('click', handleLogout);
+            document.getElementById('donor-logout').addEventListener('click', handleLogout);
+            document.getElementById('hospital-logout').addEventListener('click', handleLogout);
+            
+            // Dummy OTP buttons (no real SMS sent)
+            document.getElementById('send-patient-otp')?.addEventListener('click', () => showMessage("OTP পাঠানো হয়েছে! (Simulation)", 'info'));
+            document.getElementById('send-donor-otp')?.addEventListener('click', () => showMessage("OTP পাঠানো হয়েছে! (Simulation)", 'info'));
+
+        }
+
+        async function handleLogout() {
+             try {
+                // Sign out the current Firebase user
+                await signOut(auth);
+                // Re-authenticate anonymously to maintain session integrity
+                await signInAnonymously(auth);
+                
+                currentUserRole = null;
+                showMessage("সফলভাবে লগআউট করা হয়েছে।", 'info');
+                showScreen('main-selection');
+            } catch (error) {
+                console.error("Logout Error:", error);
+                showMessage("লগআউট ব্যর্থ হয়েছে।", 'error');
+            }
+        }
+
+
+        window.onload = function () {
+            setupAuthentication();
+            populateDatalists();
+            setupListeners();
+            showScreen('main-selection'); // Start on the main role selection screen
+        }
+
+    </script>
+</body>
+</html>
